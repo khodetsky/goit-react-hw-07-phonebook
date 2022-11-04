@@ -1,16 +1,11 @@
 import { Formik } from 'formik';
 import { AddForm, AddField, InputLabel, SubmitButton } from './ContactForm.styled';
-import {  useSelector, useDispatch } from "react-redux";
-import { addContact } from '../../redux/contactsSlice';
-import { nanoid } from 'nanoid';
-import { getContacts } from '../../redux/selectors';
-import { filteredContacts } from "../../redux/contactsSlice";
-
-
+import { useFetchContactsQuery, useCreateContactMutation } from '../../redux/contactsSlice';
 
 export const ContactForm = () => {
-    const dispatch = useDispatch();
-    const contacts = useSelector(getContacts);
+    const { data: contacts } = useFetchContactsQuery();
+    const [createContact] = useCreateContactMutation();
+
 
     const initialValues = {
         name: '',
@@ -21,7 +16,7 @@ export const ContactForm = () => {
         <Formik initialValues={initialValues}
             onSubmit={(values, actions) => {
                 const createNewContact = (contacts, data) => {
-                    if (filteredContacts(contacts).find(contact => contact.name === data.name)) {
+                    if (contacts.find(contact => contact.name === data.name)) {
                         alert(`${data.name} is already in contacts`)
                     } else if (data.number.trim() === "" && data.name.trim() === "") {
                         alert(`Enter name and number`)
@@ -30,7 +25,7 @@ export const ContactForm = () => {
                     } else if (data.number.trim() === "") {
                         alert(`Сontact must contain a number`)
                     } else {
-                        dispatch(addContact({ id: nanoid(), ...data }));
+                        createContact(data);
                         actions.resetForm();
                     }
                 };
